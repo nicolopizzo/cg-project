@@ -8,10 +8,11 @@
     <title>Document</title>
     <script src="lib/m4.js"></script>
 </head>
-<body>
-<canvas id="canvas" style="width: 100vw; height: 100vw">
+<body style="border: 0; margin: 0; padding: 0">
+<canvas id="canvas" style="width: 50vw; height: 99vh; background-color: #769dbf ">
 
 </canvas>
+
 <script id="vs" type="x-shader/x-vertex">
 
   attribute vec4 a_position;
@@ -81,7 +82,7 @@
     vec3 halfVector = normalize(u_lightDirection + surfaceToViewDirection);
 
     float fakeLight = dot(u_lightDirection, normal) * .5 + .5;
-    float specularLight = clamp(dot(normal, halfVector), 0.0, 1.0);
+    float specularLight = clamp(dot(normal, halfVector), 0.2, 0.5);
     vec4 specularMapColor = texture2D(specularMap, v_texcoord);
     vec3 effectiveSpecular = specular * specularMapColor.rgb;
 
@@ -95,7 +96,10 @@
         effectiveDiffuse * fakeLight +
         effectiveSpecular * pow(specularLight, shininess),
         effectiveOpacity);
+
   }
+
+
 
 
 </script>
