@@ -79,7 +79,7 @@ async function main() {
     document.querySelector("#canvas").addEventListener("wheel", (event) => {
         const dy = event.deltaY
         if (dy < 0) {
-            radius = Math.max(radius-1, 11)
+            radius = Math.max(radius-1, 5)
         } else {
             radius = Math.min(radius+1, 19)
         }
