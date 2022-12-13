@@ -53,18 +53,20 @@ async function main() {
 
     let u_world = m4.yRotation(Math.PI)
     u_world = m4.xRotate(u_world, - Math.PI / 8)
-    // u_world = m4.yRotate(u_world, 0.2)
+    let busTransformation = u_world
 
-    console.log(u_world)
-
-    document.querySelector("#canvas").addEventListener("mousedown", (event) => {
+    /** @type Element */
+    const canvasRef = document.querySelector("#canvas")
+    canvasRef.addEventListener("mousedown", (event) => {
         canMove = true;
         x = event.x;
     })
-    document.querySelector("#canvas").addEventListener("mouseup", () => {
+
+    canvasRef.addEventListener("mouseup", () => {
         canMove = false
     })
-    document.querySelector("#canvas").addEventListener("mousemove", (event) => {
+
+    canvasRef.addEventListener("mousemove", (event) => {
         if (!canMove) {
             return
         }
@@ -75,8 +77,7 @@ async function main() {
         busTransformation = m4.yRotate(busTransformation, yMove * 0.005)
         x = event.x
     })
-
-    document.querySelector("#canvas").addEventListener("wheel", (event) => {
+    canvasRef.addEventListener("wheel", (event) => {
         const dy = event.deltaY
         if (dy < 0) {
             radius = Math.max(radius-1, 5)
@@ -86,7 +87,6 @@ async function main() {
         console.log(radius)
     })
 
-    let busTransformation = u_world
 
     function render() {
         // console.log(u_world)
