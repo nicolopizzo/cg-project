@@ -4,7 +4,9 @@ const models = [
     'strada_casa',
     'marciapiedi',
     'prato',
-    'bus'
+    'bus',
+    'piscina',
+    'cristallo'
 ]
 
 let x = 0
@@ -88,11 +90,16 @@ async function main() {
     })
 
 
+
+
     function render() {
         // console.log(u_world)
         webglUtils.resizeCanvasToDisplaySize(gl.canvas);
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
 
         const fieldOfViewRadians = degToRad(60);
         const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
@@ -109,10 +116,11 @@ async function main() {
         const view = m4.inverse(camera);
 
         const sharedUniforms = {
-            u_lightDirection: m4.normalize([-1, 3, 2]),
+            u_lightDirection: m4.normalize([1, 2, 4]),
             u_view: view,
             u_projection: projection,
             u_viewWorldPosition: cameraPosition,
+            u_lightPosition: m4.addVectors(cameraPosition, [0, 0, 5]),
         };
 
         // console.log(meshProgramInfo)

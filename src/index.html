@@ -7,18 +7,17 @@
     <meta content="ie=edge" http-equiv="X-UA-Compatible">
     <title>Document</title>
     <script src="lib/m4.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <link href="style.css" rel="stylesheet">
 </head>
 <body>
 <div id="container">
-    <canvas id="canvas"> </canvas>
-<!--    <div id="controls">-->
-<!--        Blablabla-->
-<!--    </div>-->
+    <canvas id="canvas"></canvas>
+    <!--    <div id="controls">-->
+    <!--        Blablabla-->
+    <!--    </div>-->
 </div>
 
 <script id="vs" type="x-shader/x-vertex">
-
   attribute vec4 a_position;
   attribute vec3 a_normal;
   attribute vec3 a_tangent;
@@ -35,8 +34,10 @@
   varying vec3 v_surfaceToView;
   varying vec2 v_texcoord;
   varying vec4 v_color;
+  varying vec3 vertPos;
 
   void main() {
+    vertPos = vec3(u_world * a_position);
     vec4 worldPosition = u_world * a_position;
     gl_Position = u_projection * u_view * worldPosition;
     v_surfaceToView = u_viewWorldPosition - worldPosition.xyz;
@@ -48,8 +49,6 @@
     v_color = a_color;
   }
 
-
-
 </script>
 <script id="fs" type="x-shader/x-fragment">
 
@@ -60,6 +59,7 @@
   varying vec3 v_surfaceToView;
   varying vec2 v_texcoord;
   varying vec4 v_color;
+  varying vec3 vertPos;
 
   uniform vec3 diffuse;
   uniform sampler2D diffuseMap;
@@ -72,38 +72,29 @@
   uniform float opacity;
   uniform vec3 u_lightDirection;
   uniform vec3 u_ambientLight;
+  uniform vec3 u_lightPosition;
 
   void main () {
     vec3 normal = normalize(v_normal) * ( float( gl_FrontFacing ) * 2.0 - 1.0 );
-    vec3 tangent = normalize(v_tangent) * ( float( gl_FrontFacing ) * 2.0 - 1.0 );
-    vec3 bitangent = normalize(cross(normal, tangent));
-
-    mat3 tbn = mat3(tangent, bitangent, normal);
-    normal = texture2D(normalMap, v_texcoord).rgb * 2. - 1.;
-    normal = normalize(tbn * normal);
 
     vec3 surfaceToViewDirection = normalize(v_surfaceToView);
     vec3 halfVector = normalize(u_lightDirection + surfaceToViewDirection);
 
     float fakeLight = dot(u_lightDirection, normal) * .5 + .5;
-    float specularLight = clamp(dot(normal, halfVector), 0., 0.);
-    vec4 specularMapColor = texture2D(specularMap, v_texcoord);
-    vec3 effectiveSpecular = specular * specularMapColor.rgb;
 
     vec4 diffuseMapColor = texture2D(diffuseMap, v_texcoord);
     vec3 effectiveDiffuse = diffuse * diffuseMapColor.rgb * v_color.rgb;
-    float effectiveOpacity = opacity * diffuseMapColor.a * v_color.a;
 
-    gl_FragColor = vec4(
+    vec3 N = normal;
+    vec3 L = normalize(u_lightPosition - vertPos);
+
+	float lambertian = max(dot(N, L), 0.0);
+    gl_FragColor = vec4((
         emissive +
         ambient * u_ambientLight +
-        effectiveDiffuse * fakeLight +
-        effectiveSpecular * pow(specularLight, shininess),
-        effectiveOpacity);
-
+        effectiveDiffuse * fakeLight) * lambertian * 1.5,
+        opacity);
   }
-
-
 
 
 </script>
