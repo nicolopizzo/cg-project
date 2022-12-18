@@ -325,10 +325,6 @@ async function setInScene(model, gl) {
         return await response.text();
     }));
     const materials = parseMTL(matTexts.join('\n'));
-    console.log(materials)
-    // Materials = {...Materials, ...materials}
-    // console.log(Materials)
-    // materials.push(parseMTL())
 
     // load texture for materials
     for (const material of Object.values(materials)) {

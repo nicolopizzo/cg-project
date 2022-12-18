@@ -114,7 +114,6 @@ async function main() {
             gl.TEXTURE_2D,             // texture target
             shadow.depthTexture,       // texture
             0);                          // mip level                   // mip level
-        console.log(gl.DEPTH_ATTACHMENT)
         // Shadow settings
         shadow.enable = false;
         shadow.fov = 60;
@@ -143,8 +142,6 @@ async function main() {
             return
         }
         const yMove = event.x - x
-        console.log(yMove)
-
         u_world = m4.yRotate(u_world, yMove * 0.005)
         busTransformation = m4.yRotate(busTransformation, yMove * 0.005)
         x = event.x
