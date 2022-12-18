@@ -54,7 +54,7 @@ async function main() {
     }
 
     let u_world = m4.yRotation(Math.PI)
-    u_world = m4.xRotate(u_world, - Math.PI / 8)
+    u_world = m4.xRotate(u_world, -Math.PI / 8)
     let busTransformation = u_world
 
     /** @type Element */
@@ -82,14 +82,14 @@ async function main() {
     canvasRef.addEventListener("wheel", (event) => {
         const dy = event.deltaY
         if (dy < 0) {
-            radius = Math.max(radius-1, 5)
+            radius = Math.max(radius - 1, 5)
         } else {
-            radius = Math.min(radius+1, 19)
+            radius = Math.min(radius + 1, 19)
         }
         console.log(radius)
     })
 
-
+    const lightPosition = [10, 10, 15]
 
 
     function render() {
@@ -120,7 +120,7 @@ async function main() {
             u_view: view,
             u_projection: projection,
             u_viewWorldPosition: cameraPosition,
-            u_lightPosition: m4.addVectors(cameraPosition, [0, 0, 5]),
+            u_lightPosition: lightPosition,
         };
 
         // console.log(meshProgramInfo)
@@ -147,6 +147,7 @@ async function main() {
                     default:
                         webglUtils.setUniforms(meshProgramInfo, {
                             u_world,
+                            kD: 0.0
                         }, material);
                 }
                 // calls gl.drawArrays or gl.drawElements

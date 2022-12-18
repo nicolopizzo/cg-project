@@ -311,7 +311,7 @@ async function setInScene(model, gl) {
         specular: [1, 1, 1],
         specularMap: textures.defaultWhite,
         shininess: 400,
-        opacity: 0.5,
+        opacity: 1.0,
     };
     const objHref = `./models/${model}.obj`;
     const response = await fetch(objHref);
