@@ -1,16 +1,8 @@
-const models = [
-    'palazzo',
-    'strada',
-    'strada_casa',
-    'marciapiedi',
-    'prato',
-    'bus',
-    'piscina',
-    'cristallo'
-]
+const models = ['palazzo', 'strada', 'strada_casa', 'marciapiedi', 'prato', 'bus', 'piscina', 'cristallo']
 
 let x = 0
 let canMove = false
+let canMoveBus = false
 
 async function main() {
     // Get A WebGL context
@@ -64,6 +56,10 @@ async function main() {
         x = event.x;
     })
 
+    canvasRef.addEventListener("dblclick", (e) => {
+        canMoveBus = !canMoveBus
+    })
+
     canvasRef.addEventListener("mouseup", () => {
         canMove = false
     })
@@ -91,15 +87,15 @@ async function main() {
 
     const lightPosition = [10, 10, 15]
 
+    const busVelocity = -0.01
 
     function render() {
-        // console.log(u_world)
-        webglUtils.resizeCanvasToDisplaySize(gl.canvas);
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
+        webglUtils.resizeCanvasToDisplaySize(gl.canvas);
 
         const fieldOfViewRadians = degToRad(60);
         const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
@@ -110,7 +106,6 @@ async function main() {
         const cameraPosition = m4.addVectors(cameraTarget, [0, 0, radius]);
         const camera = m4.lookAt(cameraPosition, cameraTarget, up);
 
-        // cameraPosition = m4.dot(cameraPosition, [0.2, 0.2, 0.2])
 
         // Make a view matrix from the camera matrix.
         const view = m4.inverse(camera);
@@ -123,35 +118,17 @@ async function main() {
             u_lightPosition: lightPosition,
         };
 
-        // console.log(meshProgramInfo)
-        gl.useProgram(meshProgramInfo.program);
-
         // calls gl.uniform
-        webglUtils.setUniforms(meshProgramInfo, sharedUniforms);
-        // console.log(time)
         for (let model of models) {
-            for (const {bufferInfo, material} of Parts[model]) {
-                // calls gl.bindBuffer, gl.enableVertexAttribArray, gl.vertexAttribPointer
-                webglUtils.setBuffersAndAttributes(gl, meshProgramInfo, bufferInfo);
-
-                switch (model) {
-                    case 'bus':
-                        // const move = (Math.random() * 0.002 - 0.005)
-                        const move = -0.004
-                        busTransformation = m4.yRotate(busTransformation, move)
-
-                        webglUtils.setUniforms(meshProgramInfo, {
-                            u_world: busTransformation,
-                        }, material);
-                        break
-                    default:
-                        webglUtils.setUniforms(meshProgramInfo, {
-                            u_world,
-                            kD: 0.0
-                        }, material);
-                }
-                // calls gl.drawArrays or gl.drawElements
-                webglUtils.drawBufferInfo(gl, bufferInfo);
+            switch (model) {
+                case 'bus':
+                    // TODO: enable moveBus with double click
+                    // if (canMoveBus)
+                    busTransformation = m4.yRotate(busTransformation, busVelocity)
+                    renderMesh(model, gl, sharedUniforms, meshProgramInfo, Parts, busTransformation)
+                    break
+                default:
+                    renderMesh(model, gl, sharedUniforms, meshProgramInfo, Parts, u_world)
             }
         }
 

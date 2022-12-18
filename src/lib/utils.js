@@ -410,3 +410,19 @@ async function setInScene(model, gl) {
     }
 
 }
+
+function renderMesh(model, gl, sharedUniforms, programInfo, parts, u_world) {
+    gl.useProgram(programInfo.program)
+
+    webglUtils.setUniforms(programInfo, sharedUniforms);
+
+    for (const {bufferInfo, material} of parts[model]) {
+        // calls gl.bindBuffer, gl.enableVertexAttribArray, gl.vertexAttribPointer
+        webglUtils.setBuffersAndAttributes(gl, programInfo, bufferInfo);
+        webglUtils.setUniforms(programInfo, {u_world}, material)
+
+
+        webglUtils.drawBufferInfo(gl, bufferInfo);
+    }
+
+}
