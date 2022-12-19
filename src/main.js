@@ -8,7 +8,13 @@ let textureProgramInfo;
 
 let lightPosition = [5, 6, 16]
 let lightTarget = [0.8, 1, 1]
-let shadowEnabled = true;
+let shadowEnabled = false;
+let transaprencyEnabled = true;
+let radius;
+let u_world;
+let busTransformation;
+
+const SPACEBAR_KEY = ' ';
 
 async function main() {
     // Get A WebGL context
@@ -50,7 +56,7 @@ async function main() {
 
     /* CAMERA SETTINGS */
     const cameraTarget = [0, 0, 0];
-    let radius = 15;
+    radius = 15;
     const zNear = radius * 0.001;
     const dof = radius * 3;
     const fieldOfViewRadians = degToRad(60);
@@ -65,15 +71,12 @@ async function main() {
 
 
     /* LIGHT SETTINGS */
-    // const lightPosition = m4.normalize([1, 0, 3])
-    // const lightPosition = [4, 2, 7]
-    // const lightTarget = [1, 1, 1]
     const lightDirection = m4.normalize([-1, 2, 4])
 
     /* BUS SETTINGS */
-    let u_world = m4.yRotation(Math.PI)
+    u_world = m4.yRotation(Math.PI)
     u_world = m4.xRotate(u_world, -Math.PI / 8)
-    let busTransformation = u_world
+    busTransformation = u_world
     const busVelocity = -0.01
 
     /* SHADOWS */
@@ -141,10 +144,10 @@ async function main() {
         if (!canMove) {
             return
         }
-        const yMove = event.x - x
+        const yMove = event.x ? event.x - x : event.touches[0].clientX - x;
         u_world = m4.yRotate(u_world, yMove * 0.005)
         busTransformation = m4.yRotate(busTransformation, yMove * 0.005)
-        x = event.x
+        x = event.x || event.touches[0].clientX
     }
 
     function handleZoom(event) {
@@ -159,24 +162,37 @@ async function main() {
         camera = m4.lookAt(cameraPosition, cameraTarget, up);
     }
 
-    const canvasRef = document.querySelector("#canvas")
-    canvasRef.addEventListener("mousedown", (event) => {
+    function startEvent(event) {
         canMove = true;
         x = event.x;
-    })
+        if (!event.x) {
+            x = event.touches[0].clientX
+        }
+        console.log(x)
+    }
 
+    function endEvent() {
+        canMove = false;
+    }
+
+    const canvasRef = document.getElementById("canvas")
+    canvasRef.addEventListener("mousedown", startEvent)
+    canvasRef.addEventListener("touchstart", startEvent)
+    canvasRef.addEventListener("mouseup", endEvent);
+    // canvasRef.addEventListener("touchend", endEvent)
     canvasRef.addEventListener("dblclick", (e) => {
         canMoveBus = !canMoveBus
-    })
 
-    canvasRef.addEventListener("mouseup", () => {
-        canMove = false
     })
+    // canvasRef.addEventListener("")
+
 
     canvasRef.addEventListener("mousemove", handleRotate)
+    canvasRef.addEventListener("touchmove", handleRotate)
     canvasRef.addEventListener("wheel", handleZoom)
     document.addEventListener("keydown", (event) => {
         canMove = true;
+        console.log(event.key)
         switch (event.key) {
             case 'ArrowLeft':
             case 'a':
@@ -194,6 +210,8 @@ async function main() {
             case 's':
                 handleZoom({deltaY: 1})
                 break
+            case SPACEBAR_KEY:
+                canMoveBus = !canMoveBus
         }
         canMove = false
     })
@@ -206,13 +224,21 @@ async function main() {
 
         gl.enable(gl.CULL_FACE);
         gl.enable(gl.DEPTH_TEST);
-        gl.enable(gl.BLEND);
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        // console.log(gl.ONE_MINUS_SRC_ALPHA);
+        if (transaprencyEnabled) {
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        } else {
+            gl.disable(gl.BLEND)
+        }
+        // gl.blendFunc(gl.SRC_ALPHA,gl.BLEND_SRC_ALPHA)
+        // gl.blendFunc(gl.)
 
         let cameraPosition = m4.addVectors(cameraTarget, [0, 0, radius]);
         const camera = m4.lookAt(cameraPosition, cameraTarget, up);
         // Make a view matrix from the camera matrix.
         let view = m4.inverse(camera);
+        console.log(shadowEnabled)
         if (!shadowEnabled) {
             const sharedUniforms = {
                 u_lightDirection: lightDirection,
@@ -252,7 +278,7 @@ async function main() {
                 u_textureMatrix: m4.identity(),
                 u_projectedTexture: shadow.depthTexture,
                 u_reverseLightDirection: lightWorldMatrix.slice(8, 11),
-                u_lightPosition: lightPosition
+                u_lightPosition: lightPosition,
             };
 
             // draw to the depth texture
@@ -269,6 +295,9 @@ async function main() {
                 } else
                     renderMesh(model, gl, sharedUniforms, colorProgramInfo, Parts, u_world)
             });
+            if (!transaprencyEnabled) {
+                renderMesh('cristallo', gl, sharedUniforms, colorProgramInfo, Parts, u_world)
+            }
 
             bindFrameBufferNull()
 
@@ -302,19 +331,24 @@ async function main() {
                 } else
                     renderMesh(model, gl, sharedUniforms, textureProgramInfo, Parts, u_world)
             });
+            if (!transaprencyEnabled) {
+                renderMesh('cristallo', gl, sharedUniforms, textureProgramInfo, Parts, u_world)
+            }
 
             bindFrameBufferNull()
 
             // render "cristallo" mesh outside textureProgramInfo to avoid shadows
-            sharedUniforms = {
-                u_lightDirection: lightDirection,
-                u_view: view,
-                u_projection: projection,
-                u_viewWorldPosition: cameraPosition,
-                u_lightPosition: lightPosition,
-            };
+            if (transaprencyEnabled) {
+                sharedUniforms = {
+                    u_lightDirection: lightDirection,
+                    u_view: view,
+                    u_projection: projection,
+                    u_viewWorldPosition: cameraPosition,
+                    u_lightPosition: lightPosition,
+                };
 
-            renderMesh('cristallo', gl, sharedUniforms, meshProgramInfo, Parts, u_world)
+                renderMesh('cristallo', gl, sharedUniforms, meshProgramInfo, Parts, u_world)
+            }
         }
 
         requestAnimationFrame(render);

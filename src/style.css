@@ -2,20 +2,88 @@
     border: 0;
     padding: 0;
     margin: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+}
+
+h2 {
+    font-weight: 500;
+}
+
+h3 {
+    font-weight: 300;
+    font-size: 1.6rem;
 }
 
 #container {
-    height: 100vh;
+    /*display: inline;*/
     display: flex;
     flex-direction: row;
+    flex-grow: inherit;
 }
 
 #canvas {
     flex: 3;
+    float: left;
+    height: 100vh;
     background-color: #769dbf;
-    border-right: 3px solid black;
+    width: 75vw;
 }
 
-#controls {
+#controls-container {
     flex: 1;
 }
+
+#guide, #controls-text {
+    padding: 1vw 1vh;
+    margin: 1vw;
+}
+
+#guide {
+    background-color: #769dbf;
+}
+
+#guide ul {
+    list-style: none;
+}
+
+@media screen and (max-width: 720px) {
+    #container {
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    #canvas {
+        width: 100vw;
+    }
+
+    #controls-container {
+        display: flex;
+        flex-direction: row-reverse;
+    }
+
+    #controls {
+        flex: 1;
+        float: left;
+    }
+
+    #controls-text {
+        width: 50vw;
+        float: left;
+        flex: 1;
+        /*display: none;*/
+        /*font-size: 0.7rem;*/
+    }
+
+    h3 {
+        font-size: 1.2rem;
+    }
+
+    #guide {
+        display: none;
+    }
+}
+

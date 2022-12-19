@@ -5,13 +5,47 @@
     <meta content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
           name="viewport">
     <meta content="ie=edge" http-equiv="X-UA-Compatible">
-    <title>Document</title>
+    <title>CG Project</title>
     <script src="lib/m4.js"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700&display=swap" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
 </head>
 <body>
 <div id="container">
     <canvas id="canvas"></canvas>
+    <div id="controls-container">
+        <div id="guide">
+            <h2>Istruzioni d'uso</h2>
+            <ul style="padding: 1vw 1vh">
+                <li>W/UP: zoom in della scena</li>
+                <li>S/DOWN: zoom out della scena</li>
+                <li>D/RIGHT: rotazione destra della scena</li>
+                <li>A/LEFT: rotazione sinistra della scena</li>
+                <li>SPACE: animazione del bus</li>
+            </ul>
+            È Inoltre possibile utilizzare il mouse per interagire con la scena. Trascina il mouse per muovere la scena,
+            usa la rotellina per zoommare, o premi due volte il tasto sinistro per fermare o muovere il bus.
+        </div>
+        <canvas id="controls"></canvas>
+        <div id="controls-text">
+            <h3>Pannello di controllo</h3>
+            <p>Di seguito è possibile selezionare due opzioni di advanced rendering. Seleziona quelle che preferisci</p>
+            <form style="display: flex; flex-direction: column">
+                <div>
+                    <input autocomplete="off" onchange="shadowEnabled = !shadowEnabled" type="checkbox"
+                           value="shadowEnabled">
+                    Ombre
+                </div>
+                <div>
+
+                    <input autocomplete="off" checked onchange="transaprencyEnabled = !transaprencyEnabled"
+                           type="checkbox"> Trasparenza
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <script id="vs" type="x-shader/x-vertex">
@@ -45,6 +79,15 @@ void main() {
     v_texcoord = a_texcoord;
     v_color = a_color;
 }
+
+
+
+
+
+
+
+
+
 
 
 </script>
@@ -94,6 +137,15 @@ void main() {
         opacity);
     }
 
+
+
+
+
+
+
+
+
+
 </script>
 
 <script id="vertex-shader-3d" type="x-shader/x-vertex">
@@ -131,6 +183,15 @@ void main() {
 
         v_color = a_color;
     }
+
+
+
+
+
+
+
+
+
 
 </script>
 <script id="fragment-shader-3d" type="x-shader/x-fragment">precision mediump float;
@@ -198,6 +259,15 @@ void main() {
                                                            }
 
 
+
+
+
+
+
+
+
+
+
 </script>
 
 
@@ -213,6 +283,15 @@ void main() {
                                                           }
 
 
+
+
+
+
+
+
+
+
+
 </script>
 <script id="color-fragment-shader" type="x-shader/x-fragment">precision mediump float;
 
@@ -221,6 +300,15 @@ void main() {
                                                                   gl_FragColor = u_color;
                                                               }
 
+
+
+
+
+
+
+
+
+
 </script>
 
 
@@ -228,5 +316,6 @@ void main() {
 <script src="lib/utils.js"></script>
 
 <script src="./main.js"></script>
+<script src="./lib/gui.js"></script>
 </body>
 </html>
