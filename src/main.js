@@ -1,4 +1,4 @@
-const models = ['palazzo', 'strada', 'strada_casa', 'marciapiedi', 'prato', 'bus', 'piscina', 'foto']
+const models = ['palazzo', 'strada', 'strada_casa', 'marciapiedi', 'prato', 'bus', 'piscina', 'foto', 'trees']
 
 let x = 0
 let canMove = false;
