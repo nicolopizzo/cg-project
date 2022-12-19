@@ -46,12 +46,10 @@ function main() {
     if (window.innerWidth < window.innerHeight && window.innerWidth <= 720) {
         wMult = .5;
         hMult = 1;
-        console.log('ok')
     }
 
     const maxWidth = container.clientWidth * wMult
     const maxHeight = container.clientHeight * hMult
-    console.log(maxWidth)
     canvas.width = maxWidth
     canvas.height = maxHeight
     let w = maxWidth / 4, h = maxHeight / 4;
@@ -79,21 +77,17 @@ function main() {
     function handlePress(event) {
         const [x, y] = getXY(canvas, event)
         if (ctx.isPointInPath(zoomIn, x, y)) {
-            console.log("in");
             radius = Math.max(radius - 1, 5)
         }
         if (ctx.isPointInPath(rotateLeft, x, y)) {
-            console.log("left")
             u_world = m4.yRotate(u_world, 0.08)
             busTransformation = m4.yRotate(busTransformation, 0.08)
         }
         if (ctx.isPointInPath(rotateRight, x, y)) {
-            console.log("right")
             u_world = m4.yRotate(u_world, -0.08)
             busTransformation = m4.yRotate(busTransformation, -0.08)
         }
         if (ctx.isPointInPath(zoomOut, x, y)) {
-            console.log("out")
             radius = Math.min(radius + 1, 19)
         }
         if (ctx.isPointInPath(playBus, x, y)) {

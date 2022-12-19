@@ -168,7 +168,6 @@ async function main() {
         if (!event.x) {
             x = event.touches[0].clientX
         }
-        console.log(x)
     }
 
     function endEvent() {
@@ -184,7 +183,22 @@ async function main() {
         canMoveBus = !canMoveBus
 
     })
+
     // canvasRef.addEventListener("")
+
+    function debounce(f) {
+        let timer;
+        return function (event) {
+            if (timer) {
+                clearTimeout(timer)
+            }
+            timer = setTimeout(f, 500, event)
+        }
+    }
+
+    window.addEventListener("resize", (e) => {
+        location.reload();
+    })
 
 
     canvasRef.addEventListener("mousemove", handleRotate)
@@ -192,7 +206,6 @@ async function main() {
     canvasRef.addEventListener("wheel", handleZoom)
     document.addEventListener("keydown", (event) => {
         canMove = true;
-        console.log(event.key)
         switch (event.key) {
             case 'ArrowLeft':
             case 'a':
@@ -224,21 +237,17 @@ async function main() {
 
         gl.enable(gl.CULL_FACE);
         gl.enable(gl.DEPTH_TEST);
-        // console.log(gl.ONE_MINUS_SRC_ALPHA);
         if (transaprencyEnabled) {
             gl.enable(gl.BLEND);
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         } else {
             gl.disable(gl.BLEND)
         }
-        // gl.blendFunc(gl.SRC_ALPHA,gl.BLEND_SRC_ALPHA)
-        // gl.blendFunc(gl.)
 
         let cameraPosition = m4.addVectors(cameraTarget, [0, 0, radius]);
         const camera = m4.lookAt(cameraPosition, cameraTarget, up);
         // Make a view matrix from the camera matrix.
         let view = m4.inverse(camera);
-        console.log(shadowEnabled)
         if (!shadowEnabled) {
             const sharedUniforms = {
                 u_lightDirection: lightDirection,
