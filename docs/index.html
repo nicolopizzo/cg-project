@@ -65,12 +65,11 @@
         essere applicate alle mesh in modo manuale tramite UV editing. Per importare correttamente le mesh e le texture
         in WebGL ho fatto uso delle funzioni <code>ParseOBJ</code> e <code>ParseMTL</code> presenti nel file <code>utils.js</code>;
         tali funzioni sono delle rivisitazioni di quelle presenti sul sito WebGL Fundamentals <a href="#ref3">[3]</a>.
-        L'importazione delle
-        mesh e delle texture avviene in particolare scorrendo una lista contenente i nomi delle mesh contenute nella
-        cartella <code>models</code>. Su tali nomi viene invocata la funzione <code>setInScene</code> che richiama
-        telescopicamente le due funzioni esposte sopra, valuta i file, e costruisce le strutture <code>parts</code> e
-        <code>material</code> che verranno restituite; tali strutture contengono i dati relativi ai materiali e al
-        posizionamento delle mesh nella scena.
+        L'importazione delle mesh e delle texture avviene in particolare scorrendo una lista contenente i nomi delle
+        mesh contenute nella cartella <code>models</code>. Su tali nomi viene invocata la funzione
+        <code>setInScene</code> che richiama telescopicamente le due funzioni esposte sopra, valuta i file, e costruisce
+        le strutture <code>parts</code> e <code>material</code> che verranno restituite; tali strutture contengono i
+        dati relativi ai materiali e al posizionamento delle mesh nella scena.
         <pre>
             <code class="lang-js">
                 for (let model of [...models, 'cristallo']) {
