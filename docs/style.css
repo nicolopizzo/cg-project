@@ -1,0 +1,58 @@
+@import url(https://fonts.googleapis.com/css2?family=Roboto&display=swap);
+@import url(https://fonts.googleapis.com/css?family=Questrial);
+@import url(https://fonts.googleapis.com/css?family=Arvo);
+
+@font-face {
+    src: url(https://lea.verou.me/logo.otf);
+    font-family: 'LeaVerou';
+}
+
+* {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+}
+
+body {
+    background-color: #232b31;
+}
+
+html {
+    font-size: 1.1rem;
+}
+
+h2 {
+    margin: 30px 0 5px 0;
+}
+
+h3 {
+    margin-top: 2vh;
+}
+
+h3, .sub {
+    margin-left: 2vw;
+}
+
+.container {
+    padding: 1vh 1vw;
+    width: 60vw;
+    margin: 0 auto;
+    background-color: #fefefe;
+}
+
+.img-container {
+    margin: 1rem;
+    display: flex;
+    justify-content: center;
+}
+
+.img-landscape {
+    width: 75%;
+    border: 3px solid black;
+}
+
+.img-portrait {
+    width: 20%;
+    border: 3px solid black;
+}

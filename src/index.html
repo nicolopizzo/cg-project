@@ -61,8 +61,6 @@ uniform mat4 u_world;
 uniform vec3 u_viewWorldPosition;
 
 varying vec3 v_normal;
-varying vec3 v_tangent;
-varying vec3 v_surfaceToView;
 varying vec2 v_texcoord;
 varying vec4 v_color;
 varying vec3 vertPos;
@@ -71,243 +69,173 @@ void main() {
     vertPos = vec3(u_world * a_position);
     vec4 worldPosition = u_world * a_position;
     gl_Position = u_projection * u_view * worldPosition;
-    v_surfaceToView = u_viewWorldPosition - worldPosition.xyz;
+
     mat3 normalMat = mat3(u_world);
     v_normal = normalize(normalMat * a_normal);
-    v_tangent = normalize(normalMat * a_tangent);
 
     v_texcoord = a_texcoord;
     v_color = a_color;
 }
 
-
-
-
-
-
-
-
-
-
-
 </script>
 <script id="fs" type="x-shader/x-fragment">
-    precision highp float;
-    varying vec3 v_normal;
-    varying vec3 v_tangent;
-    varying vec3 v_surfaceToView;
-    varying vec2 v_texcoord;
-    varying vec4 v_color;
-    varying vec3 vertPos;
-    varying vec3 normalInterp;
-    uniform vec3 diffuse;
-    uniform sampler2D diffuseMap;
-    uniform vec3 ambient;
-    uniform vec3 emissive;
-    uniform vec3 specular;
-    uniform sampler2D specularMap;
-    uniform float shininess;
-    uniform sampler2D normalMap;
-    uniform float opacity;
-    uniform vec3 u_lightDirection;
-    uniform vec3 u_ambientLight;
-    uniform vec3 u_lightPosition;
+precision highp float;
 
-    void main() {
-        vec3 normal = normalize(v_normal) * (float(gl_FrontFacing) * 2.0 - 1.0);
+varying vec3 v_normal;
+varying vec2 v_texcoord;
+varying vec4 v_color;
+varying vec3 vertPos;
 
-        vec3 surfaceToViewDirection = normalize(v_surfaceToView);
-        vec3 halfVector = normalize(u_lightDirection + surfaceToViewDirection);
+uniform vec3 diffuse;
+uniform sampler2D diffuseMap;
+uniform vec3 ambient;
+uniform sampler2D specularMap;
+uniform sampler2D normalMap;
+uniform float opacity;
+uniform vec3 u_ambientLight;
+uniform vec3 u_lightPosition;
 
-        float fakeLight = dot(u_lightDirection, normal) * .20 + .20;
+void main() {
+    vec3 normal = normalize(v_normal) * (float(gl_FrontFacing) * 2.0 - 1.0);
 
-        vec4 diffuseMapColor = texture2D(diffuseMap, v_texcoord);
-        vec3 effectiveDiffuse = diffuse * diffuseMapColor.rgb * v_color.rgb;
+    vec4 diffuseMapColor = texture2D(diffuseMap, v_texcoord);
+    vec3 effectiveDiffuse = diffuse * diffuseMapColor.rgb * v_color.rgb;
 
-        vec3 N = normalize(normal);
-        vec3 L = normalize(u_lightPosition - vertPos);
+    vec3 N = normalize(normal);
+    vec3 L = normalize(u_lightPosition - vertPos);
 
-        // Lambert's cosine law
-        float lambertian = max(dot(N, L), 0.0);
+    // Lambert's cosine law
+    float lambertian = max(dot(N, L), 0.0);
 
-        gl_FragColor = vec4((
-        emissive +
-        ambient * u_ambientLight +
-        effectiveDiffuse * lambertian * fakeLight) * 3.0,
-        opacity);
-    }
-
-
-
-
-
-
-
-
-
+    gl_FragColor = vec4((
+    ambient * u_ambientLight +
+    effectiveDiffuse * lambertian),
+    opacity);
+}
 
 </script>
 
 <script id="vertex-shader-3d" type="x-shader/x-vertex">
-    attribute vec4 a_position;
-    attribute vec2 a_texcoord;
-    attribute vec3 a_normal;
-    attribute vec4 a_color;
+attribute vec4 a_position;
+attribute vec2 a_texcoord;
+attribute vec3 a_normal;
+attribute vec4 a_color;
 
 
-    uniform mat4 u_projection;
-    uniform mat4 u_view;
-    uniform mat4 u_world;
-    uniform mat4 u_textureMatrix;
+uniform mat4 u_projection;
+uniform mat4 u_view;
+uniform mat4 u_world;
+uniform mat4 u_textureMatrix;
 
-    varying vec2 v_texcoord;
-    varying vec4 v_projectedTexcoord;
-    varying vec3 v_normal;
-    varying vec4 v_color;
-    varying vec3 vertPos;
+varying vec2 v_texcoord;
+varying vec4 v_projectedTexcoord;
+varying vec3 v_normal;
+varying vec4 v_color;
+varying vec3 vertPos;
 
-    void main() {
-        vertPos = vec3(u_world * a_position);
-        // Multiply the position by the matrix.
-        vec4 worldPosition = u_world * a_position;
+void main() {
+    vertPos = vec3(u_world * a_position);
+    // Multiply the position by the matrix.
+    vec4 worldPosition = u_world * a_position;
 
-        gl_Position = u_projection * u_view * worldPosition;
+    gl_Position = u_projection * u_view * worldPosition;
 
-        // Pass the texture coord to the fragment shader.
-        v_texcoord = a_texcoord;
+    // Pass the texture coord to the fragment shader.
+    v_texcoord = a_texcoord;
 
-        v_projectedTexcoord = u_textureMatrix * worldPosition;
+    v_projectedTexcoord = u_textureMatrix * worldPosition;
 
-        // orient the normals and pass to the fragment shader
-        v_normal = mat3(u_world) * a_normal;
+    // orient the normals and pass to the fragment shader
+    v_normal = mat3(u_world) * a_normal;
 
-        v_color = a_color;
-    }
-
-
-
-
-
-
-
-
-
+    v_color = a_color;
+}
 
 </script>
-<script id="fragment-shader-3d" type="x-shader/x-fragment">precision mediump float;
+<script id="fragment-shader-3d" type="x-shader/x-fragment">
+precision mediump float;
 
 // Passed in from the vertex shader.
-                                                           varying vec2 v_texcoord;
-                                                           varying vec4 v_projectedTexcoord;
-                                                           varying vec3 v_normal;
-                                                           varying vec4 v_color;
-                                                           varying vec3 vertPos;
+varying vec2 v_texcoord;
+varying vec4 v_projectedTexcoord;
+varying vec3 v_normal;
+varying vec4 v_color;
+varying vec3 vertPos;
 
-                                                           uniform vec4 u_colorMult;
-                                                           uniform sampler2D u_texture;
-                                                           uniform sampler2D u_projectedTexture;
-                                                           uniform float u_bias;
-                                                           uniform vec3 u_reverseLightDirection;
-                                                           uniform vec3 u_lightPosition;
+uniform vec4 u_colorMult;
+uniform sampler2D u_texture;
+uniform sampler2D u_projectedTexture;
+uniform float u_bias;
+uniform vec3 u_reverseLightDirection;
+uniform vec3 u_lightPosition;
 
 // Material Properties
-                                                           uniform sampler2D diffuseMap;
-                                                           uniform sampler2D normalMap;
-                                                           uniform vec3 diffuse;
-                                                           uniform vec3 ambient;
-                                                           uniform vec3 emissive;
-                                                           uniform vec3 specular;
-                                                           uniform float shininess;
-                                                           uniform float opacity;
+uniform sampler2D diffuseMap;
+uniform sampler2D normalMap;
+uniform vec3 diffuse;
+uniform vec3 ambient;
+uniform float opacity;
 
-                                                           void main() {
-                                                               // because v_normal is a varying it's interpolated
-                                                               // so it will not be a unit vector. Normalizing it
-                                                               // will make it a unit vector again
-                                                               vec3 normal = normalize(v_normal);
+void main() {
+    // because v_normal is a varying it's interpolated
+    // so it will not be a unit vector. Normalizing it
+    // will make it a unit vector again
+    vec3 normal = normalize(v_normal);
 
-                                                               float light = dot(normal, u_reverseLightDirection);
+    float light = dot(normal, u_reverseLightDirection);
 
-                                                               vec3 projectedTexcoord = v_projectedTexcoord.xyz / v_projectedTexcoord.w;
-                                                               float currentDepth = projectedTexcoord.z + u_bias;
+    vec3 projectedTexcoord = v_projectedTexcoord.xyz / v_projectedTexcoord.w;
+    float currentDepth = projectedTexcoord.z + u_bias;
 
-                                                               bool inRange =
-                                                               projectedTexcoord.x >= 0.0 &&
-                                                               projectedTexcoord.x <= 1.0 &&
-                                                               projectedTexcoord.y >= 0.0 &&
-                                                               projectedTexcoord.y <= 1.0;
+    bool inRange =
+    projectedTexcoord.x >= 0.0 &&
+    projectedTexcoord.x <= 1.0 &&
+    projectedTexcoord.y >= 0.0 &&
+    projectedTexcoord.y <= 1.0;
 
-                                                               // the 'r' channel has the depth values
-                                                               float projectedDepth = texture2D(u_projectedTexture, projectedTexcoord.xy).r;
-                                                               float shadowLight = (inRange && projectedDepth <= currentDepth) ? 0.0 : 1.0;
+    // the 'r' channel has the depth values
+    float projectedDepth = texture2D(u_projectedTexture, projectedTexcoord.xy).r;
+    float shadowLight = (inRange && projectedDepth <= currentDepth) ? 0.25 : 1.0;
 
-                                                               vec4 diffuseMapColor = texture2D(diffuseMap, v_texcoord);
-                                                               vec3 effectiveDiffuse = diffuse * diffuseMapColor.rgb * v_color.rgb;
-                                                               float effectiveOpacity = opacity * diffuseMapColor.a * v_color.a;
+    vec4 diffuseMapColor = texture2D(diffuseMap, v_texcoord);
+    vec3 effectiveDiffuse = diffuse * diffuseMapColor.rgb * v_color.rgb;
+    float effectiveOpacity = opacity * diffuseMapColor.a * v_color.a;
 
-                                                               vec4 texColor = texture2D(u_texture, v_texcoord) * u_colorMult;
+    vec4 texColor = texture2D(u_texture, v_texcoord) * u_colorMult;
 
-                                                               vec3 N = normalize(normal);
-                                                               vec3 L = normalize(u_lightPosition - vertPos);
+    vec3 N = normalize(normal);
+    vec3 L = normalize(u_lightPosition - vertPos);
 
-                                                               // Lambert's cosine law
-                                                               float lambertian = max(dot(N, L), 0.0);
+    // Lambert's cosine law
+    float lambertian = max(dot(N, L), 0.0);
 
-                                                               gl_FragColor = vec4(
-                                                               effectiveDiffuse.rgb * light * shadowLight * lambertian * 2.0,
-                                                               effectiveOpacity);
-                                                           }
-
-
-
-
-
-
-
-
-
-
-
+    gl_FragColor = vec4(
+    effectiveDiffuse.rgb * light * shadowLight * lambertian * 2.0,
+    effectiveOpacity);
+}
 </script>
 
 
-<script id="color-vertex-shader" type="x-shader/x-vertex">attribute vec4 a_position;
+<script id="color-vertex-shader" type="x-shader/x-vertex">
+attribute vec4 a_position;
 
-                                                          uniform mat4 u_projection;
-                                                          uniform mat4 u_view;
-                                                          uniform mat4 u_world;
+uniform mat4 u_projection;
+uniform mat4 u_view;
+uniform mat4 u_world;
 
-                                                          void main() {
-                                                              // Multiply the position by the matrices.
-                                                              gl_Position = u_projection * u_view * u_world * a_position;
-                                                          }
-
-
-
-
-
-
-
-
-
-
+void main() {
+    // Multiply the position by the matrices.
+    gl_Position = u_projection * u_view * u_world * a_position;
+}
 
 </script>
-<script id="color-fragment-shader" type="x-shader/x-fragment">precision mediump float;
+<script id="color-fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
 
-                                                              uniform vec4 u_color;
-                                                              void main() {
-                                                                  gl_FragColor = u_color;
-                                                              }
-
-
-
-
-
-
-
-
-
+uniform vec4 u_color;
+void main() {
+    gl_FragColor = u_color;
+}
 
 </script>
 

@@ -257,8 +257,6 @@ async function main() {
                 u_lightPosition: lightPosition,
             };
 
-            //
-            // // calls gl.uniform
             for (let model of [...models, 'cristallo']) {
                 switch (model) {
                     case 'bus':

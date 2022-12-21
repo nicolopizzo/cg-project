@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Relazione</title>
+    <link href="style.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.4.1/themes/prism.css" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <div style="text-align: center">
+        <h1>Progetto Computer Graphics </h1>
+        <h2 style="margin: 0">Anno Accademico 2021/22</h2>
+        <h2 style="margin: 0">Nicolò Pizzo</h2>
+    </div>
+
+
+    <h2>Introduzione</h2>
+    L'idea del progetto è quella di costruire un modello, ricoperto da un vetro, in cui si ha una scena con diversi
+    elementi grafici tridimensionali. Come vedremo, la scena ha diverse modalità di rendering avanzato, che ho impiegato
+    per rendere la scena più dinamica e interattiva. I modelli presenti sono stati creati personalmente attraverso
+    Blender. È inoltre presente un movimento autonomo di un modello nella scena; tale movimento permette di osservare
+    la scena in numerose prospettive, e mettendo in pausa l'animazione è anche possibile fissare una visualizzazione
+    della scena.
+
+    <h2>Presentazione dell'interfaccia</h2>
+    L'applicazione, nella sua visualizzazione desktop, si presenta con la scena sulla sinistra, mentre sulla destra si
+    hanno le istruzioni d'uso, il controller, e il pannello di controllo per le opzioni avanzate di rendering quali
+    ombre e trasparenza.
+    <div class="img-container">
+        <img class="img-landscape" src="res/Desktop_view.png">
+    </div>
+    Nella sua versione mobile, i controlli ed il pannello si trovano in basse per dare più spazio alla visualizzazione
+    del canvas. In questa visualizzazione si perdono le istruzioni d'uso in quanto sono esplicative dell'uso di tastiera
+    e mouse.
+    <div class="img-container">
+        <img class="img-portrait" src="res/Mobile_view.png">
+    </div>
+    <h3>I controlli</h3>
+    <div class="sub">
+        Le interazioni con la scena sono tre: la si può ruotare attorno all'asse Y, si può effettuare l'operazione di
+        zoom, ed infine si può arrestare o avviare l'animazione del bus. Tali operazioni sono possibili sia da tastiera
+        che mouse. Come si può vedere dalle istruzioni dell'applicazione, trascinando il mouse si può ruotare la scena,
+        mentre ci si può allontanare o avvicinare al centro della scena mediante la rotellina del mouse; per abilitare o
+        disabilitare il movimento del bus basta premere due volte il tasto sinistro del mouse. Attraverso la tastiera,
+        l'interazione è permessa attraverso le frecce direzionali o la combinazione W/A/S/D, mentre per l'animazione del
+        bus è possibile utilizzare la barra spaziatrice. Lato mobile è possibile scorrere il dito per ruotare la scena,
+        mentre le altre operazioni si possono effettuare per mezzo del controller; questo ha dei pulsanti che permettono
+        intuitivamente di comprendere quali siano le funzionalità ad essi collegati. Infine, il pannello di controllo
+        permette di scegliere alcune opzioni di renderizzazione avanzata; quelle che ho individuato più contestualizzate
+        e necessarie per una buona visualizzazione del progetto sono la trasparenza e l'impiego delle ombre. Di default
+        la trasparenza è attiva, mentre le ombre sono disabilitate.
+    </div>
+
+    <h2>Funzionalità</h2>
+    Di seguito vengono descritte le principali funzionalità del progetto, mostrando come queste sono implementate in
+    breve.
+
+    <h3>Mesh e Texture</h3>
+    <div class="sub">
+        Tutte le mesh presenti nel progetto sono state realizzate su blender in modo autonomo, utilizzando come guida
+        alcuni video su Youtube <a href="#ref1">[1,2]</a>. Le texture dell'asfalto e della muratura del palazzo sono
+        state scaricate, per poi
+        essere applicate alle mesh in modo manuale tramite UV editing. Per importare correttamente le mesh e le texture
+        in WebGL ho fatto uso delle funzioni <code>ParseOBJ</code> e <code>ParseMTL</code> presenti nel file <code>utils.js</code>;
+        tali funzioni sono delle rivisitazioni di quelle presenti sul sito WebGL Fundamentals <a href="#ref3">[3]</a>.
+        L'importazione delle
+        mesh e delle texture avviene in particolare scorrendo una lista contenente i nomi delle mesh contenute nella
+        cartella <code>models</code>. Su tali nomi viene invocata la funzione <code>setInScene</code> che richiama
+        telescopicamente le due funzioni esposte sopra, valuta i file, e costruisce le strutture <code>parts</code> e
+        <code>material</code> che verranno restituite; tali strutture contengono i dati relativi ai materiali e al
+        posizionamento delle mesh nella scena.
+        <pre>
+            <code class="lang-js">
+                for (let model of [...models, 'cristallo']) {
+                    const {materials, parts} = await setInScene(model, gl)
+
+                    Materials = {...Materials, ...materials}
+                    Parts = {...Parts, ...parts}
+                }
+            </code>
+        </pre>
+    </div>
+
+    <h3>Shading</h3>
+    <div class="sub">
+        La tecnica di shading impiegata è il <code>Phong shading</code>. L'implementazione prevede l'interpolazione
+        della normale al livello del singolo pixel per determinarne il colore; dunque per fare ciò ho inserito il
+        seguente codice nel fragment-shader.
+        <pre>
+            <code class="language-clike">
+                vec3 N = normalize(normal);
+                vec3 L = normalize(u_lightPosition - vertPos);
+                float lambertian = max(dot(N, L), 0.0);
+
+                gl_FragColor = vec4((
+                    ambient * u_ambientLight +
+                    effectiveDiffuse * lambertian), opacity);
+            </code>
+        </pre>
+        Si noti che, poichè non sono interessato alla luce speculare, non è presente il fattore di somma della luce
+        speculare. In caso contrario si sarebbe dovuto computare adeguatamente il fattore speculare e sommarlo a quelli
+        di ambiente e diffusione.
+    </div>
+
+    <h3>Rendering base</h3>
+    <div class="sub">
+        Nel caso in cui l'opzione di rendering di ombre sia disabilitata, viene effettuato il rendering di base; tale
+        tipo di rendering è stato mostrato nelle immagini precedenti, e permette l'impiego di texture ed illuminazione
+        diffusa. Il rendering avviene mediante la funzione <code>render()</code>, nella quale si configura il canvas in
+        modo corretto rispetto alla viewport, e si configurano adeguatamente le impostazioni della camera; infine, nel
+        caso del rendering di base, si costruisce una mappa che contiene i valori <code>uniform</code> da passare a
+        fragment e vertex shader. Infine viene richiamata la funzione <code>renderMesh</code> per ciascun modello
+        importato.
+    </div>
+
+    <h3>Trasparenza</h3>
+    <div class="sub">
+        Per abilitare la trasparenza ho abilitato la funzionalità <code class="lang-js">gl.BLEND</code> ed impostato
+        la funzione di blending adatta. Inoltre, è possibile attivare e disattivare tale funzionalità a livello visivo
+        mediante la relativa checkbox; a livello implementativo tale switch è permesso attraverso la variabile
+        booleana <code class="lang-js">transparencyEnabled</code>: in base al valore di tale variable, il vetro che
+        avvolge la scena viene renderizzata in modo coerente.
+    </div>
+
+    <h3>Rendering con ombre</h3>
+    <div class="sub">
+        Per effettuare il rendering con ombre ho adottato la tecnica dello shadowmapping; questa consiste nel
+        renderizzare due volte la scena: la prima volta questa viene renderizzata dal punto di vista della luce, mentre
+        la seconda viene renderizzata dal punto di vista della camera. Il primo rendering genera una mappa di profondità
+        che viene utilizzata per tenere traccia della distanza degli oggetti nella scena dalla sorgente luminosa. <br>
+        Per implementare tale tecnica ho prima creato la funzione <code>prepareShadows</code> che restituisce le
+        caratteristiche statiche delle ombre; dopodichè ho aggiunto due coppie di vertexShader e fragmentShader, una per
+        rendering.
+        <div class="img-container">
+            <img class="img-landscape" src="res/Shadows_view.png">
+        </div>
+
+        La scelta della renderizzazione avanzata avviene per mezzo di una variabile booleana
+        <code>shadowEnabled</code>: nel caso in cui questa sia attiva, vengono utilizzate le coppie di shader descritte
+        precedentemente. L'unico elemento che non viene renderizzato in questa coppia di shader è il vetro che ricopre
+        la scena: se la trasparenza è abilitata il vetro viene renderizzato sugli shader di base, altrimenti anche esso
+        viene renderizzato sulle coppie di shader; è possibile infatti notare che, se le ombre sono abilitate e la
+        trasparenza disabilitata, l'intera scena è in ombra in quanto il vetro la ricopre interamente. Di seguito mostro
+        un confronto nel caso in cui la scena sia senza trasparenza: l'immagine sulla sinistra mostra la scena senza
+        ombre mentre quella sulla destra fa uso del rendering con ombre.
+        <div class="img-container" style="gap: 10px">
+            <img class="img-landscape" src="res/Alpha_view.png" style="width: 40%">
+            <img class="img-landscape" src="res/Shadows_Alpha_view.png" style="width: 40%">
+        </div>
+    </div>
+
+    <h2>Riferimenti</h2>
+    <ul style="list-style: none">
+        <li id="ref1">[1] <a href="https://www.youtube.com/watch?v=JHIuV4HbUg0">Modellazione Bus</a></li>
+        <li id="ref2">[2] <a href="https://www.youtube.com/watch?v=7Q9TQctARgw">Modellazione Palazzo</a></li>
+        <li id="ref3">[3] <a href="https://webglfundamentals.org/webgl/lessons/webgl-load-obj-w-mtl.html">WebGL
+            Fundamentals</a>
+        </li>
+    </ul>
+
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.4.1/prism.min.js"></script>
+</body>
+</html>
